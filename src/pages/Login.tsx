@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Mail, Lock, Eye, EyeOff, User, AlertCircle, CheckCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -11,10 +15,58 @@ const Login = () => {
     name: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { signup, signin } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login/signup logic here
-    console.log('Form submitted:', formData);
+    setIsLoading(true);
+    setMessage(null);
+
+    try {
+      if (isLogin) {
+        const result = await signin({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (result.success) {
+          setMessage({ type: 'success', text: result.message });
+          setTimeout(() => {
+            navigate('/templates');
+          }, 1500);
+        } else {
+          setMessage({ type: 'error', text: result.message });
+        }
+      } else {
+        // Signup validation
+        if (formData.password !== formData.confirmPassword) {
+          setMessage({ type: 'error', text: 'Passwords do not match' });
+          setIsLoading(false);
+          return;
+        }
+
+        const result = await signup({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (result.success) {
+          setMessage({ type: 'success', text: result.message + ' Please sign in.' });
+          setTimeout(() => {
+            setIsLogin(true);
+            setFormData({ email: formData.email, password: '', confirmPassword: '', name: '' });
+          }, 2000);
+        } else {
+          setMessage({ type: 'error', text: result.message });
+        }
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'An unexpected error occurred' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,38 +74,8 @@ const Login = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
-  };
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const { name, email, password } = formData;
-
-    fetch('http://localhost:5000/api/auth/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        // handle success or error (show message, redirect, etc.)
-      });
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const { email, password } = formData;
-
-    fetch('http://localhost:5000/api/auth/signin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        // handle login (save token, redirect, etc.)
-      });
+    // Clear message when user starts typing
+    if (message) setMessage(null);
   };
 
   return (
@@ -78,12 +100,25 @@ const Login = () => {
             </p>
           </div>
 
+          {/* Message Display */}
+          {message && (
+            <div className={`mx-8 mt-6 p-4 rounded-lg flex items-center space-x-2 ${
+              message.type === 'success' 
+                ? 'bg-green-50 text-green-800 border border-green-200' 
+                : 'bg-red-50 text-red-800 border border-red-200'
+            }`}>
+              {message.type === 'success' ? (
+                <CheckCircle className="h-5 w-5" />
+              ) : (
+                <AlertCircle className="h-5 w-5" />
+              )}
+              <span className="text-sm">{message.text}</span>
+            </div>
+          )}
+
           {/* Form */}
           <div className="p-8">
-            <form
-              onSubmit={isLogin ? handleLogin : handleSignup}
-              className="space-y-6"
-            >
+            <form onSubmit={handleSubmit} className="space-y-6">
               {!isLogin && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -99,6 +134,7 @@ const Login = () => {
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                       placeholder="Enter your full name"
                       required={!isLogin}
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -118,6 +154,7 @@ const Login = () => {
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                     placeholder="Enter your email"
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -136,11 +173,13 @@ const Login = () => {
                     className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                     placeholder="Enter your password"
                     required
+                    disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    disabled={isLoading}
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -166,6 +205,7 @@ const Login = () => {
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                       placeholder="Confirm your password"
                       required={!isLogin}
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -177,6 +217,7 @@ const Login = () => {
                     <input
                       type="checkbox"
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      disabled={isLoading}
                     />
                     <span className="ml-2 text-sm text-gray-600">
                       Remember me
@@ -185,6 +226,7 @@ const Login = () => {
                   <button
                     type="button"
                     className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                    disabled={isLoading}
                   >
                     Forgot password?
                   </button>
@@ -193,9 +235,17 @@ const Login = () => {
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
-                {isLogin ? 'Sign In' : 'Create Account'}
+                {isLoading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>{isLogin ? 'Signing In...' : 'Creating Account...'}</span>
+                  </div>
+                ) : (
+                  isLogin ? 'Sign In' : 'Create Account'
+                )}
               </button>
             </form>
 
@@ -208,7 +258,10 @@ const Login = () => {
 
             {/* Social Login */}
             <div className="space-y-3">
-              <button className="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2">
+              <button 
+                className="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
+                disabled={isLoading}
+              >
                 <img
                   src="https://developers.google.com/identity/images/g-logo.png"
                   alt="Google"
@@ -216,7 +269,10 @@ const Login = () => {
                 />
                 <span>Continue with Google</span>
               </button>
-              <button className="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2">
+              <button 
+                className="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2"
+                disabled={isLoading}
+              >
                 <span>Continue with GitHub</span>
               </button>
             </div>
@@ -229,8 +285,13 @@ const Login = () => {
                   : 'Already have an account?'}
                 <button
                   type="button"
-                  onClick={() => setIsLogin(!isLogin)}
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    setMessage(null);
+                    setFormData({ email: '', password: '', confirmPassword: '', name: '' });
+                  }}
                   className="ml-1 text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                  disabled={isLoading}
                 >
                   {isLogin ? 'Sign up' : 'Sign in'}
                 </button>
