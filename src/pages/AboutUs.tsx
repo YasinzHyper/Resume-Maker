@@ -23,7 +23,7 @@ const AboutUs = () => {
     {
       name: 'Soham Mangal',
       role: 'Backend Developer ',
-      image: swagataImg,
+      image: sohamImg,
       description: 'Tech innovator focused on creating tools that make career growth accessible.',
     },
     {
@@ -32,7 +32,7 @@ const AboutUs = () => {
       image: swagataImg,
       description: 'Award-winning designer passionate about beautiful, functional user experiences.',
     },
-        {
+    {
       name: 'Sougata Kundu',
       role: 'Ai Engineer',
       image: swagataImg,
@@ -80,21 +80,21 @@ const AboutUs = () => {
             </h2>
             <div className="text-lg sm:text-xl text-white mb-8 leading-relaxed text-opacity-70 ">
               <p className="mb-6">
-                Cwix was born from a simple observation: creating a professional resume shouldn't be 
-                complicated or expensive. In 2020, our founders Sarah and Michael noticed that many 
-                talented professionals were being overlooked simply because their resumes didn't 
+                Cwix was born from a simple observation: creating a professional resume shouldn't be
+                complicated or expensive. In 2020, our founders Sarah and Michael noticed that many
+                talented professionals were being overlooked simply because their resumes didn't
                 properly showcase their skills and experience.
               </p>
               <p className="mb-6">
-                They set out to build a platform that would level the playing field – one that would 
-                give everyone access to professionally designed templates and an intuitive editing 
-                experience. What started as a weekend project has grown into a platform trusted by 
+                They set out to build a platform that would level the playing field – one that would
+                give everyone access to professionally designed templates and an intuitive editing
+                experience. What started as a weekend project has grown into a platform trusted by
                 thousands of professionals worldwide.
               </p>
               <p>
-                Today, we're proud to have helped over 25,000 people create resumes that have opened 
-                doors to new careers, promotions, and opportunities. But we're just getting started – 
-                our mission is to help millions more professionals tell their story in the most 
+                Today, we're proud to have helped over 25,000 people create resumes that have opened
+                doors to new careers, promotions, and opportunities. But we're just getting started –
+                our mission is to help millions more professionals tell their story in the most
                 compelling way possible.
               </p>
             </div>
@@ -110,7 +110,7 @@ const AboutUs = () => {
               Meet Our Team
             </h2>
             <p className="text-lg sm:text-xl text-white mb-8 leading-relaxed text-opacity-70">
-              We're a passionate team of designers, developers, and career experts 
+              We're a passionate team of designers, developers, and career experts
               dedicated to your professional success.
             </p>
           </div>
