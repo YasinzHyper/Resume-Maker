@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Download, Save, Eye, ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { Download, Save, Eye, ArrowLeft, Plus, Trash2, Loader } from 'lucide-react';
 import ResumePreview from '../components/ResumePreview';
+import { generatePDF } from '../utils/pdfGenerator';
 
 interface PersonalInfo {
   name: string;
@@ -40,6 +41,8 @@ interface Skill {
 const ResumeBuilder = () => {
   const { templateId } = useParams();
   const [activeSection, setActiveSection] = useState('personal');
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadMessage, setDownloadMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
     name: '',
@@ -149,9 +152,34 @@ const ResumeBuilder = () => {
     ));
   };
 
-  const handleDownload = () => {
-    // This would integrate with jsPDF or similar library
-    alert('Download functionality would be implemented here');
+  const handleDownload = async () => {
+    if (!personalInfo.name.trim()) {
+      setDownloadMessage({ type: 'error', text: 'Please enter your name before downloading.' });
+      setTimeout(() => setDownloadMessage(null), 3000);
+      return;
+    }
+
+    setIsDownloading(true);
+    setDownloadMessage(null);
+
+    try {
+      await generatePDF({
+        personalInfo,
+        experiences,
+        education,
+        skills,
+        templateId: templateId || 'modern'
+      });
+      
+      setDownloadMessage({ type: 'success', text: 'Resume downloaded successfully!' });
+      setTimeout(() => setDownloadMessage(null), 3000);
+    } catch (error) {
+      console.error('Download error:', error);
+      setDownloadMessage({ type: 'error', text: 'Failed to download resume. Please try again.' });
+      setTimeout(() => setDownloadMessage(null), 3000);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const renderPersonalSection = () => (
@@ -159,13 +187,14 @@ const ResumeBuilder = () => {
       <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
           <input
             type="text"
             value={personalInfo.name}
             onChange={(e) => setPersonalInfo({...personalInfo, name: e.target.value})}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="John Doe"
+            required
           />
         </div>
         <div>
@@ -441,16 +470,26 @@ const ResumeBuilder = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
-            <button className="p-2 text-gray-600 hover:text-gray-800 transition-colors">
+            <button className="p-2 text-white hover:text-blue-200 transition-colors">
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div>
               <h1 className="text-2xl font-bold text-white">Resume Builder</h1>
-              <p className="text-gray-600">Template: {templateId}</p>
+              <p className="text-blue-200">Template: {templateId}</p>
             </div>
           </div>
           
           <div className="flex items-center space-x-3">
+            {downloadMessage && (
+              <div className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                downloadMessage.type === 'success' 
+                  ? 'bg-green-100 text-green-800 border border-green-200' 
+                  : 'bg-red-100 text-red-800 border border-red-200'
+              }`}>
+                {downloadMessage.text}
+              </div>
+            )}
+            
             <button className="flex items-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
               <Save className="h-4 w-4" />
               <span>Save</span>
@@ -461,10 +500,20 @@ const ResumeBuilder = () => {
             </button>
             <button
               onClick={handleDownload}
-              className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all"
+              disabled={isDownloading}
+              className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Download className="h-4 w-4" />
-              <span>Download PDF</span>
+              {isDownloading ? (
+                <>
+                  <Loader className="h-4 w-4 animate-spin" />
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4" />
+                  <span>Download PDF</span>
+                </>
+              )}
             </button>
           </div>
         </div>
