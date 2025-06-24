@@ -18,25 +18,21 @@ const AboutUs = () => {
       name: 'Swagata Mandal',
       role: 'Frontend Developer & Web Designer',
       image: swagataImg,
-      description: 'Former HR executive with 10+ years helping people land their dream jobs.',
     },
     {
       name: 'Soham Mangal',
       role: 'Backend Developer ',
       image: sohamImg,
-      description: 'Tech innovator focused on creating tools that make career growth accessible.',
     },
     {
       name: 'Sayan Barman',
       role: 'Frontend Developer & Web Designer',
       image: sayanImg,
-      description: 'Award-winning designer passionate about beautiful, functional user experiences.',
     },
     {
       name: 'Sougata Kundu',
       role: 'Ai Engineer',
       image: sougataImg,
-      description: 'Award-winning designer passionate about beautiful, functional user experiences.',
     },
   ];
 
@@ -117,9 +113,7 @@ const AboutUs = () => {
                   <p className="mb-3 font-medium text-blue-600">
                     {member.role}
                   </p>
-                  <p className="text-sm leading-relaxed text-gray-600">
-                    {member.description}
-                  </p>
+                  {/* Description removed */}
                 </div>
               </div>
             ))}
