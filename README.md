@@ -5,11 +5,11 @@
 ---
 ## 🖼️ Screenshots
 
-![Dashboard View](img/Screenshot1.jpg)
+![Screenshot1](./img/Screenshot2.png)
 
-![Dashboard View](img/Screenshot2.jpg)
+![Screenshot2](./img/Screenshot1.png)
 
-![Dashboard View](img/Screenshot3.jpg)
+![Screenshot3](./img/Screenshot3.png)
 
 ---
 ## 👥 Meet the Team
