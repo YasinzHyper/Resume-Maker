@@ -40,6 +40,11 @@ const Login = () => {
         }
       } else {
         // Signup validation
+        if (formData.password.length < 6) {
+          setMessage({ type: 'error', text: 'Password must be at least 6 characters long.' });
+          setIsLoading(false);
+          return;
+        }
         if (formData.password !== formData.confirmPassword) {
           setMessage({ type: 'error', text: 'Passwords do not match' });
           setIsLoading(false);
@@ -102,11 +107,10 @@ const Login = () => {
 
           {/* Message Display */}
           {message && (
-            <div className={`mx-8 mt-6 p-4 rounded-lg flex items-center space-x-2 ${
-              message.type === 'success' 
-                ? 'bg-green-50 text-green-800 border border-green-200' 
+            <div className={`mx-8 mt-6 p-4 rounded-lg flex items-center space-x-2 ${message.type === 'success'
+                ? 'bg-green-50 text-green-800 border border-green-200'
                 : 'bg-red-50 text-red-800 border border-red-200'
-            }`}>
+              }`}>
               {message.type === 'success' ? (
                 <CheckCircle className="h-5 w-5" />
               ) : (
@@ -258,7 +262,7 @@ const Login = () => {
 
             {/* Social Login */}
             <div className="space-y-3">
-              <button 
+              <button
                 className="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
                 disabled={isLoading}
               >
@@ -269,7 +273,7 @@ const Login = () => {
                 />
                 <span>Continue with Google</span>
               </button>
-              <button 
+              <button
                 className="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2"
                 disabled={isLoading}
               >
