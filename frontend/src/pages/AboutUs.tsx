@@ -29,35 +29,35 @@ const AboutUs = () => {
     {
       name: 'Sayan Barman',
       role: 'Frontend Developer & Web Designer',
-      image: swagataImg,
+      image: sayanImg,
       description: 'Award-winning designer passionate about beautiful, functional user experiences.',
     },
     {
       name: 'Sougata Kundu',
       role: 'Ai Engineer',
-      image: swagataImg,
+      image: sougataImg,
       description: 'Award-winning designer passionate about beautiful, functional user experiences.',
     },
   ];
 
   const values = [
     {
-      icon: <Target className="h-6 w-6" />,
+      icon: <Target className="w-6 h-6" />,
       title: 'Mission-Driven',
       description: 'We believe everyone deserves a chance to showcase their potential through a professional resume.',
     },
     {
-      icon: <Users className="h-6 w-6" />,
+      icon: <Users className="w-6 h-6" />,
       title: 'User-Focused',
       description: 'Every feature we build is designed with our users\' success and ease-of-use in mind.',
     },
     {
-      icon: <Award className="h-6 w-6" />,
+      icon: <Award className="w-6 h-6" />,
       title: 'Quality First',
       description: 'We maintain the highest standards in template design and platform reliability.',
     },
     {
-      icon: <Heart className="h-6 w-6" />,
+      icon: <Heart className="w-6 h-6" />,
       title: 'Passion for Growth',
       description: 'We\'re committed to helping professionals at every stage of their career journey.',
     },
@@ -72,65 +72,52 @@ const AboutUs = () => {
       }}
     >
       {/* Story Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
+      <section className="px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-16 text-center">
+            <h2 className="mb-6 text-3xl font-bold text-white sm:text-4xl">
               Our Story
             </h2>
-            <div className="text-lg sm:text-xl text-white mb-8 leading-relaxed text-opacity-70 ">
+            <div className="mb-8 text-lg leading-relaxed text-white text-opacity-70 sm:text-xl">
               <p className="mb-6">
-                Cwix was born from a simple observation: creating a professional resume shouldn't be
-                complicated or expensive. In 2020, our founders Sarah and Michael noticed that many
-                talented professionals were being overlooked simply because their resumes didn't
-                properly showcase their skills and experience.
+                <strong>From Exams to Execution – Our First Full-Stack Project!</strong> 🚀
               </p>
               <p className="mb-6">
-                They set out to build a platform that would level the playing field – one that would
-                give everyone access to professionally designed templates and an intuitive editing
-                experience. What started as a weekend project has grown into a platform trusted by
-                thousands of professionals worldwide.
-              </p>
-              <p>
-                Today, we're proud to have helped over 25,000 people create resumes that have opened
-                doors to new careers, promotions, and opportunities. But we're just getting started –
-                our mission is to help millions more professionals tell their story in the most
-                compelling way possible.
+                At the conclusion of our first year of engineering, as final exams ended, we—a team of four passionate software engineering students (Swagata Mandal, Soham Mangal, Sougata Kundu, and Sayam Barman)—chose to dedicate our 1.5-month summer break to building something impactful and practical. United by a shared vision, we brainstormed and decided to develop a Resume Builder website—a comprehensive, full-stack platform designed to empower users to generate professional resumes using modern, clean templates, customize resume content with ease, and host and share their resumes online instantly. We began by strengthening our skills in React, backend technologies, and API development through online resources. Leveraging our individual strengths, we divided responsibilities: Swagata led the frontend and contributed to backend API integration, Sayan enhanced the frontend with responsive design and user experience improvements, Soham managed backend logic and database integration, and Sougata is developing upcoming AI-powered features for smarter resume generation. This project marked our first real-world full-stack collaboration. We gained invaluable experience—far beyond what tutorials could offer—by solving real challenges, collaborating closely, and delivering features as a unified team. We are proud of our accomplishments and excited to share our work with you. Your feedback is always welcome as we continue to grow and enhance our platform. Stay tuned for our GitHub repository and live demo!
               </p>
             </div>
           </div>
         </div>
       </section>
-
       {/* Team Section */}
       <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-3xl font-bold text-white sm:text-4xl">
               Meet Our Team
             </h2>
-            <p className="text-lg sm:text-xl text-white mb-8 leading-relaxed text-opacity-70">
+            <p className="mb-8 text-lg leading-relaxed text-white text-opacity-70 sm:text-xl">
               We're a passionate team of designers, developers, and career experts
               dedicated to your professional success.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-6">
+          <div className="grid gap-6 md:grid-cols-4">
             {team.map((member, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+              <div key={index} className="overflow-hidden bg-white rounded-xl shadow-lg transition-shadow hover:shadow-xl">
                 <img
                   src={member.image}
                   alt={member.name}
-                  className="w-full h-64 object-cover"
+                  className="object-cover w-full h-64"
                 />
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                  <h3 className="mb-1 text-xl font-semibold text-gray-900">
                     {member.name}
                   </h3>
-                  <p className="text-blue-600 font-medium mb-3">
+                  <p className="mb-3 font-medium text-blue-600">
                     {member.role}
                   </p>
-                  <p className="text-gray-600 text-sm leading-relaxed">
+                  <p className="text-sm leading-relaxed text-gray-600">
                     {member.description}
                   </p>
                 </div>
@@ -141,15 +128,15 @@ const AboutUs = () => {
       </section>
 
       {/* Contact CTA */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-black-600 text-white">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+      <section className="py-20 text-white bg-gradient-to-r from-blue-600 to-black-600">
+        <div className="px-4 mx-auto max-w-4xl text-center sm:px-6 lg:px-8">
+          <h2 className="mb-6 text-3xl font-bold sm:text-4xl">
             Get in Touch
           </h2>
-          <p className="text-xl mb-8">
+          <p className="mb-8 text-xl">
             Have questions or feedback? We'd love to hear from you.
           </p>
-          <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition-colors transform hover:scale-105">
+          <button className="px-8 py-4 font-semibold text-blue-600 bg-white rounded-lg transition-colors transform hover:bg-gray-50 hover:scale-105">
             Contact Us
           </button>
         </div>
