@@ -62,6 +62,9 @@ class ApiService {
 
   private async makeTextEnhancementRequest(endpoint: string, data: TextEnhancementData): Promise<TextEnhancementResponse> {
     try {
+      console.log('Making text enhancement request to:', `${API_BASE_URL}/text-enhancer${endpoint}`);
+      console.log('Request data:', data);
+
       const response = await fetch(`${API_BASE_URL}/text-enhancer${endpoint}`, {
         method: 'POST',
         headers: {
@@ -70,7 +73,16 @@ class ApiService {
         body: JSON.stringify(data),
       });
 
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API response error:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
       const result = await response.json();
+      console.log('API response:', result);
       return result;
     } catch (error) {
       console.error('Text enhancement API request failed:', error);
@@ -78,7 +90,7 @@ class ApiService {
         success: false,
         originalText: data.text,
         enhancedText: '',
-        message: 'Network error occurred',
+        message: error instanceof Error ? error.message : 'Network error occurred',
         error: 'Failed to connect to server'
       };
     }
@@ -103,10 +115,30 @@ class ApiService {
   }
 
   async enhanceText(text: string): Promise<TextEnhancementResponse> {
+    if (!text || text.trim().length === 0) {
+      return {
+        success: false,
+        originalText: text,
+        enhancedText: '',
+        message: 'Text cannot be empty',
+        error: 'Invalid input'
+      };
+    }
+
     return this.makeTextEnhancementRequest('/enhance', { text });
   }
 
   async enhanceResumeSection(text: string, sectionType: string): Promise<TextEnhancementResponse> {
+    if (!text || text.trim().length === 0) {
+      return {
+        success: false,
+        originalText: text,
+        enhancedText: '',
+        message: 'Text cannot be empty',
+        error: 'Invalid input'
+      };
+    }
+
     return this.makeTextEnhancementRequest('/enhance-resume-section', { text, sectionType });
   }
 }
