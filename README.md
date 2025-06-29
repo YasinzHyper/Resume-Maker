@@ -34,7 +34,9 @@
 
 **Frontend**:
 - React.js
-- Tailwind CSS (or custom CSS framework)
+- TypeScript
+- Tailwind CSS
+- Vite
 
 **Backend**:
 - Node.js
@@ -44,7 +46,7 @@
 **Tools & Libraries**:
 - JWT for Authentication
 - ESLint for code linting
-- PDF generation (likely `html-pdf` or similar)
+- PDF generation utilities
 
 ---
 
@@ -52,19 +54,22 @@
 
 ```
 Resume-Maker/
-├── backend/
-│   ├── config/           # Database config
-│   ├── controllers/      # Route logic
-│   ├── middleware/       # Validation/auth helpers
-│   ├── models/           # Mongoose schemas
-│   ├── routes/           # API endpoints
-│   └── server.js         # Express server
-├── frontend/
-│   ├── public/           # Static files
+├── backend/              # Backend API files
+│   ├── config/          # Database config
+│   ├── controllers/     # Route logic
+│   ├── middleware/      # Validation/auth helpers
+│   ├── models/          # Mongoose schemas
+│   ├── routes/          # API endpoints
+│   └── server.js        # Express server
+├── frontend/            # Frontend application files
+│   ├── public/          # Static files
 │   ├── src/
-│   │   ├── components/   # UI Components
-│   │   ├── pages/        # Application pages
-│   │   └── App.js        # Entry point
+│   │   ├── components/  # UI Components
+│   │   ├── pages/       # Application pages
+│   │   ├── services/    # API services
+│   │   ├── context/     # React contexts
+│   │   └── utils/       # Utility functions
+├── TextEnhancerAI/      # AI text enhancement module
 └── README.md
 ```
 
@@ -78,21 +83,17 @@ Resume-Maker/
    cd Resume-Maker
    ```
 
-2. **Backend Setup**
+2. **Install dependencies**
    ```bash
-   cd backend
    npm install
+   ```
+
+3. **Start the development server**
+   ```bash
    npm run dev
    ```
 
-3. **Frontend Setup**
-   ```bash
-   cd ../frontend
-   npm install
-   npm start
-   ```
-
-> Make sure MongoDB is running locally or provide your MongoDB URI in a `.env` file.
+> Note: Make sure MongoDB is running locally or provide your MongoDB URI in a `.env` file for backend functionality.
 
 ---
 
