@@ -253,34 +253,6 @@ const Login = () => {
               </button>
             </form>
 
-            {/* Divider */}
-            <div className="my-6 flex items-center">
-              <div className="flex-1 border-t border-gray-300"></div>
-              <span className="px-4 text-sm text-gray-500">or</span>
-              <div className="flex-1 border-t border-gray-300"></div>
-            </div>
-
-            {/* Social Login */}
-            <div className="space-y-3">
-              <button
-                className="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
-                disabled={isLoading}
-              >
-                <img
-                  src="https://developers.google.com/identity/images/g-logo.png"
-                  alt="Google"
-                  className="h-5 w-5"
-                />
-                <span>Continue with Google</span>
-              </button>
-              <button
-                className="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2"
-                disabled={isLoading}
-              >
-                <span>Continue with GitHub</span>
-              </button>
-            </div>
-
             {/* Toggle */}
             <div className="mt-6 text-center">
               <p className="text-gray-600">
