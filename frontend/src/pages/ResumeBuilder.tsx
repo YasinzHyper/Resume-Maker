@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Download, Save, Eye, ArrowLeft, Plus, Trash2, Loader } from 'lucide-react';
+import { Download, Save, Eye, ArrowLeft, Plus, Trash2, Loader, Sparkles } from 'lucide-react';
 import ResumePreview from '../components/ResumePreview';
 import { generatePDF } from '../utils/pdfGenerator';
+import { enhanceText } from '../services/api';
 
 interface PersonalInfo {
   name: string;
@@ -42,6 +43,7 @@ const ResumeBuilder = () => {
   const { templateId } = useParams();
   const [activeSection, setActiveSection] = useState('personal');
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isEnhancing, setIsEnhancing] = useState(false);
   const [downloadMessage, setDownloadMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
@@ -105,7 +107,7 @@ const ResumeBuilder = () => {
     setExperiences(experiences.filter(exp => exp.id !== id));
   };
 
-  const updateExperience = (id: string, field: keyof Experience, value: any) => {
+  const updateExperience = (id: string, field: keyof Experience, value: string | boolean) => {
     setExperiences(experiences.map(exp => 
       exp.id === id ? { ...exp, [field]: value } : exp
     ));
@@ -182,59 +184,109 @@ const ResumeBuilder = () => {
     }
   };
 
+  const handleEnhanceSummary = async () => {
+    if (!personalInfo.summary.trim()) {
+      setDownloadMessage({ type: 'error', text: 'Please enter some text in the Professional Summary before enhancing.' });
+      setTimeout(() => setDownloadMessage(null), 3000);
+      return;
+    }
+    setIsEnhancing(true);
+    setDownloadMessage(null);
+    try {
+      const apiResponse = await enhanceText(personalInfo.summary);
+      if (apiResponse.success && apiResponse.enhancedText) {
+        setPersonalInfo(prev => ({
+          ...prev,
+          summary: apiResponse.enhancedText
+        }));
+        setDownloadMessage({ type: 'success', text: 'Professional Summary enhanced successfully!' });
+        setTimeout(() => setDownloadMessage(null), 3000);
+      } else {
+        setDownloadMessage({ type: 'error', text: apiResponse.message || 'Enhancement failed. Please try again.' });
+        setTimeout(() => setDownloadMessage(null), 3000);
+      }
+    } catch (error) {
+      setDownloadMessage({ type: 'error', text: 'Failed to enhance text. Please try again.' });
+      setTimeout(() => setDownloadMessage(null), 3000);
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
   const renderPersonalSection = () => (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+          <label className="block mb-2 text-sm font-medium text-gray-700">Full Name *</label>
           <input
             type="text"
             value={personalInfo.name}
             onChange={(e) => setPersonalInfo({...personalInfo, name: e.target.value})}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="John Doe"
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+          <label className="block mb-2 text-sm font-medium text-gray-700">Email</label>
           <input
             type="email"
             value={personalInfo.email}
             onChange={(e) => setPersonalInfo({...personalInfo, email: e.target.value})}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="john@example.com"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+          <label className="block mb-2 text-sm font-medium text-gray-700">Phone</label>
           <input
             type="tel"
             value={personalInfo.phone}
             onChange={(e) => setPersonalInfo({...personalInfo, phone: e.target.value})}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="(555) 123-4567"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+          <label className="block mb-2 text-sm font-medium text-gray-700">Location</label>
           <input
             type="text"
             value={personalInfo.location}
             onChange={(e) => setPersonalInfo({...personalInfo, location: e.target.value})}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="City, State"
           />
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Professional Summary</label>
+        <div className="flex justify-between items-center mb-2">
+          <label className="block text-sm font-medium text-gray-700">Professional Summary</label>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleEnhanceSummary}
+              disabled={isEnhancing || !personalInfo.summary.trim()}
+              className="flex items-center px-3 py-1 space-x-2 text-sm text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-md transition-all hover:from-blue-700 hover:to-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {isEnhancing ? (
+                <>
+                  <Loader className="w-4 h-4 animate-spin" />
+                  <span>Enhancing...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  <span>Enhance</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
         <textarea
           value={personalInfo.summary}
-          onChange={(e) => setPersonalInfo({...personalInfo, summary: e.target.value})}
+          onChange={(e) => setPersonalInfo(prev => ({...prev, summary: e.target.value}))}
           rows={4}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="Write a brief summary of your professional background and goals..."
         />
       </div>
@@ -247,83 +299,109 @@ const ResumeBuilder = () => {
         <h3 className="text-lg font-semibold text-gray-900">Work Experience</h3>
         <button
           onClick={addExperience}
-          className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center px-4 py-2 space-x-2 text-white bg-blue-600 rounded-lg transition-colors hover:bg-blue-700"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="w-4 h-4" />
           <span>Add Experience</span>
         </button>
       </div>
       
       {experiences.map((exp, index) => (
-        <div key={exp.id} className="bg-gray-50 p-6 rounded-lg border">
+        <div key={exp.id} className="p-6 bg-gray-50 rounded-lg border">
           <div className="flex justify-between items-start mb-4">
             <h4 className="font-medium text-gray-900">Experience {index + 1}</h4>
             {experiences.length > 1 && (
               <button
                 onClick={() => removeExperience(exp.id)}
-                className="text-red-600 hover:text-red-800 transition-colors"
+                className="p-2 text-red-600 rounded-lg transition-colors hover:text-red-800 hover:bg-red-50"
+                title="Remove experience"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="w-4 h-4" />
               </button>
             )}
           </div>
           
-          <div className="grid md:grid-cols-2 gap-4 mb-4">
-            <input
-              type="text"
-              value={exp.title}
-              onChange={(e) => updateExperience(exp.id, 'title', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Job Title"
-            />
-            <input
-              type="text"
-              value={exp.company}
-              onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Company Name"
-            />
-            <input
-              type="text"
-              value={exp.location}
-              onChange={(e) => updateExperience(exp.id, 'location', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Location"
-            />
-            <div className="flex space-x-2">
+          {/* Job Details - Row 1 */}
+          <div className="grid gap-4 mb-4 md:grid-cols-2">
+            <div>
+              <label className="block mb-1 text-sm font-medium text-gray-700">Job Title</label>
+              <input
+                type="text"
+                value={exp.title}
+                onChange={(e) => updateExperience(exp.id, 'title', e.target.value)}
+                className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="e.g., Software Engineer"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 text-sm font-medium text-gray-700">Company</label>
+              <input
+                type="text"
+                value={exp.company}
+                onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
+                className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="e.g., Google Inc."
+              />
+            </div>
+          </div>
+
+          {/* Location and Dates - Row 2 */}
+          <div className="grid gap-4 mb-4 md:grid-cols-3">
+            <div>
+              <label className="block mb-1 text-sm font-medium text-gray-700">Location</label>
+              <input
+                type="text"
+                value={exp.location}
+                onChange={(e) => updateExperience(exp.id, 'location', e.target.value)}
+                className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="e.g., San Francisco, CA"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 text-sm font-medium text-gray-700">Start Date</label>
               <input
                 type="month"
                 value={exp.startDate}
                 onChange={(e) => updateExperience(exp.id, 'startDate', e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+            </div>
+            <div>
+              <label className="block mb-1 text-sm font-medium text-gray-700">End Date</label>
               <input
                 type="month"
                 value={exp.endDate}
                 onChange={(e) => updateExperience(exp.id, 'endDate', e.target.value)}
                 disabled={exp.current}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
               />
             </div>
           </div>
           
-          <label className="flex items-center mb-4">
-            <input
-              type="checkbox"
-              checked={exp.current}
-              onChange={(e) => updateExperience(exp.id, 'current', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <span className="ml-2 text-sm text-gray-600">I currently work here</span>
-          </label>
+          {/* Current Position Checkbox */}
+          <div className="mb-4">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={exp.current}
+                onChange={(e) => updateExperience(exp.id, 'current', e.target.checked)}
+                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+              />
+              <span className="ml-2 text-sm text-gray-600">I currently work here</span>
+            </label>
+          </div>
           
-          <textarea
-            value={exp.description}
-            onChange={(e) => updateExperience(exp.id, 'description', e.target.value)}
-            rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Describe your responsibilities and achievements..."
-          />
+          {/* Description */}
+          <div>
+            <label className="block mb-1 text-sm font-medium text-gray-700">Description</label>
+            <textarea
+              value={exp.description}
+              onChange={(e) => updateExperience(exp.id, 'description', e.target.value)}
+              rows={4}
+              className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Describe your responsibilities, achievements, and key contributions..."
+            />
+          </div>
         </div>
       ))}
     </div>
@@ -335,62 +413,83 @@ const ResumeBuilder = () => {
         <h3 className="text-lg font-semibold text-gray-900">Education</h3>
         <button
           onClick={addEducation}
-          className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center px-4 py-2 space-x-2 text-white bg-blue-600 rounded-lg transition-colors hover:bg-blue-700"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="w-4 h-4" />
           <span>Add Education</span>
         </button>
       </div>
       
       {education.map((edu, index) => (
-        <div key={edu.id} className="bg-gray-50 p-6 rounded-lg border">
+        <div key={edu.id} className="p-6 bg-gray-50 rounded-lg border">
           <div className="flex justify-between items-start mb-4">
             <h4 className="font-medium text-gray-900">Education {index + 1}</h4>
             {education.length > 1 && (
               <button
                 onClick={() => removeEducation(edu.id)}
-                className="text-red-600 hover:text-red-800 transition-colors"
+                className="p-2 text-red-600 rounded-lg transition-colors hover:text-red-800 hover:bg-red-50"
+                title="Remove education"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="w-4 h-4" />
               </button>
             )}
           </div>
           
-          <div className="grid md:grid-cols-2 gap-4">
-            <input
-              type="text"
-              value={edu.degree}
-              onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Degree"
-            />
-            <input
-              type="text"
-              value={edu.school}
-              onChange={(e) => updateEducation(edu.id, 'school', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="School Name"
-            />
-            <input
-              type="text"
-              value={edu.location}
-              onChange={(e) => updateEducation(edu.id, 'location', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Location"
-            />
-            <input
-              type="month"
-              value={edu.graduationDate}
-              onChange={(e) => updateEducation(edu.id, 'graduationDate', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <input
-              type="text"
-              value={edu.gpa || ''}
-              onChange={(e) => updateEducation(edu.id, 'gpa', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="GPA (optional)"
-            />
+          {/* Degree and School - Row 1 */}
+          <div className="grid gap-4 mb-4 md:grid-cols-2">
+            <div>
+              <label className="block mb-1 text-sm font-medium text-gray-700">Degree</label>
+              <input
+                type="text"
+                value={edu.degree}
+                onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
+                className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="e.g., Bachelor of Science in Computer Science"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 text-sm font-medium text-gray-700">School</label>
+              <input
+                type="text"
+                value={edu.school}
+                onChange={(e) => updateEducation(edu.id, 'school', e.target.value)}
+                className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="e.g., Stanford University"
+              />
+            </div>
+          </div>
+
+          {/* Location, Date, and GPA - Row 2 */}
+          <div className="grid gap-4 mb-4 md:grid-cols-3">
+            <div>
+              <label className="block mb-1 text-sm font-medium text-gray-700">Location</label>
+              <input
+                type="text"
+                value={edu.location}
+                onChange={(e) => updateEducation(edu.id, 'location', e.target.value)}
+                className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="e.g., Stanford, CA"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 text-sm font-medium text-gray-700">Graduation Date</label>
+              <input
+                type="month"
+                value={edu.graduationDate}
+                onChange={(e) => updateEducation(edu.id, 'graduationDate', e.target.value)}
+                className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 text-sm font-medium text-gray-700">GPA (Optional)</label>
+              <input
+                type="text"
+                value={edu.gpa || ''}
+                onChange={(e) => updateEducation(edu.id, 'gpa', e.target.value)}
+                className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="e.g., 3.8"
+              />
+            </div>
           </div>
         </div>
       ))}
@@ -403,41 +502,50 @@ const ResumeBuilder = () => {
         <h3 className="text-lg font-semibold text-gray-900">Skills</h3>
         <button
           onClick={addSkill}
-          className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center px-4 py-2 space-x-2 text-white bg-blue-600 rounded-lg transition-colors hover:bg-blue-700"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="w-4 h-4" />
           <span>Add Skill</span>
         </button>
       </div>
       
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="space-y-4">
         {skills.map((skill, index) => (
-          <div key={skill.id} className="bg-gray-50 p-4 rounded-lg border flex items-center space-x-4">
-            <input
-              type="text"
-              value={skill.name}
-              onChange={(e) => updateSkill(skill.id, 'name', e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Skill name"
-            />
-            <select
-              value={skill.level}
-              onChange={(e) => updateSkill(skill.id, 'level', e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="Beginner">Beginner</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Advanced">Advanced</option>
-              <option value="Expert">Expert</option>
-            </select>
-            {skills.length > 1 && (
-              <button
-                onClick={() => removeSkill(skill.id)}
-                className="text-red-600 hover:text-red-800 transition-colors"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            )}
+          <div key={skill.id} className="p-4 bg-gray-50 rounded-lg border">
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="md:col-span-1">
+                <input
+                  type="text"
+                  value={skill.name}
+                  onChange={(e) => updateSkill(skill.id, 'name', e.target.value)}
+                  className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Skill name"
+                />
+              </div>
+              <div className="md:col-span-1">
+                <select
+                  value={skill.level}
+                  onChange={(e) => updateSkill(skill.id, 'level', e.target.value)}
+                  className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                  <option value="Expert">Expert</option>
+                </select>
+              </div>
+              <div className="flex justify-end items-center">
+                {skills.length > 1 && (
+                  <button
+                    onClick={() => removeSkill(skill.id)}
+                    className="p-2 text-red-600 rounded-lg transition-colors hover:text-red-800 hover:bg-red-50"
+                    title="Remove skill"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -461,17 +569,17 @@ const ResumeBuilder = () => {
 
   return (
     <div
-      className="min-h-screen pt-32"
+      className="pt-32 min-h-screen"
       style={{
         background: "linear-gradient(152deg, rgba(8,0,0,1) 0%, rgba(106,78,205,1) 67%, rgba(46,43,43,1) 100%)"
       }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-4">
-            <button className="p-2 text-white hover:text-blue-200 transition-colors">
-              <ArrowLeft className="h-5 w-5" />
+            <button className="p-2 text-white transition-colors hover:text-blue-200">
+              <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
               <h1 className="text-2xl font-bold text-white">Resume Builder</h1>
@@ -490,27 +598,27 @@ const ResumeBuilder = () => {
               </div>
             )}
             
-            <button className="flex items-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
-              <Save className="h-4 w-4" />
+            <button className="flex items-center px-4 py-2 space-x-2 text-white bg-gray-600 rounded-lg transition-colors hover:bg-gray-700">
+              <Save className="w-4 h-4" />
               <span>Save</span>
             </button>
-            <button className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-              <Eye className="h-4 w-4" />
+            <button className="flex items-center px-4 py-2 space-x-2 text-white bg-blue-600 rounded-lg transition-colors hover:bg-blue-700">
+              <Eye className="w-4 h-4" />
               <span>Preview</span>
             </button>
             <button
               onClick={handleDownload}
               disabled={isDownloading}
-              className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center px-4 py-2 space-x-2 text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg transition-all hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isDownloading ? (
                 <>
-                  <Loader className="h-4 w-4 animate-spin" />
+                  <Loader className="w-4 h-4 animate-spin" />
                   <span>Generating...</span>
                 </>
               ) : (
                 <>
-                  <Download className="h-4 w-4" />
+                  <Download className="w-4 h-4" />
                   <span>Download PDF</span>
                 </>
               )}
@@ -518,13 +626,13 @@ const ResumeBuilder = () => {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid gap-8 lg:grid-cols-3">
           {/* Left Sidebar - Form */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-lg">
               {/* Section Navigation */}
-              <div className="border-b border-gray-200 p-6">
-                <div className="flex space-x-1">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex flex-wrap gap-2">
                   {sections.map((section) => (
                     <button
                       key={section.id}
@@ -550,15 +658,17 @@ const ResumeBuilder = () => {
 
           {/* Right Sidebar - Preview */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 sticky top-24">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Live Preview</h3>
-              <ResumePreview
-                personalInfo={personalInfo}
-                experiences={experiences}
-                education={education}
-                skills={skills}
-                templateId={templateId || 'modern'}
-              />
+            <div className="sticky top-24 p-6 bg-white rounded-xl border border-gray-200 shadow-lg max-h-[calc(100vh-8rem)] overflow-y-auto">
+              <h3 className="mb-4 text-lg font-semibold text-gray-900">Live Preview</h3>
+              <div className="overflow-hidden">
+                <ResumePreview
+                  personalInfo={personalInfo}
+                  experiences={experiences}
+                  education={education}
+                  skills={skills}
+                  templateId={templateId || 'modern'}
+                />
+              </div>
             </div>
           </div>
         </div>

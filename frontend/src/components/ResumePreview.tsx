@@ -67,7 +67,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm text-sm scale-75 origin-top-left w-[133%] h-[150%] mt-32">
+    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm text-sm scale-75 origin-top-left w-[133%] h-[150%] mt-32 overflow-hidden">
       {/* Header */}
       <div className="text-center mb-6 pb-4 border-b border-gray-200">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
@@ -116,9 +116,9 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
           <div className="space-y-4">
             {experiences.map((exp) => (
               (exp.title || exp.company) && (
-                <div key={exp.id}>
+                <div key={exp.id} className="mb-4">
                   <div className="flex justify-between items-start mb-1">
-                    <div>
+                    <div className="flex-1">
                       <h3 className="font-semibold text-gray-900 text-sm">
                         {exp.title || 'Job Title'}
                       </h3>
@@ -127,7 +127,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
                         {exp.location && ` • ${exp.location}`}
                       </p>
                     </div>
-                    <div className="text-xs text-gray-500 text-right">
+                    <div className="text-xs text-gray-500 text-right ml-2 flex-shrink-0">
                       {exp.startDate && formatDate(exp.startDate)}
                       {exp.startDate && (exp.endDate || exp.current) && ' - '}
                       {exp.current ? 'Present' : (exp.endDate && formatDate(exp.endDate))}
@@ -154,9 +154,9 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
           <div className="space-y-3">
             {education.map((edu) => (
               (edu.degree || edu.school) && (
-                <div key={edu.id}>
+                <div key={edu.id} className="mb-3">
                   <div className="flex justify-between items-start">
-                    <div>
+                    <div className="flex-1">
                       <h3 className="font-semibold text-gray-900 text-sm">
                         {edu.degree || 'Degree'}
                       </h3>
@@ -168,7 +168,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
                         <p className="text-gray-600 text-xs">GPA: {edu.gpa}</p>
                       )}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 ml-2 flex-shrink-0">
                       {edu.graduationDate && formatDate(edu.graduationDate)}
                     </div>
                   </div>
@@ -185,21 +185,21 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
           <h2 className="text-lg font-semibold text-gray-900 mb-2 pb-1 border-b border-gray-300">
             Skills
           </h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
             {skills.map((skill) => (
               skill.name && (
-                <div key={skill.id}>
+                <div key={skill.id} className="mb-2">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs font-medium text-gray-900">
+                    <span className="text-xs font-medium text-gray-900 flex-1">
                       {skill.name}
                     </span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
                       {skill.level}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-1.5">
                     <div
-                      className={`bg-blue-600 h-1.5 rounded-full ${getSkillLevelWidth(skill.level)}`}
+                      className={`bg-blue-600 h-1.5 rounded-full transition-all duration-300 ${getSkillLevelWidth(skill.level)}`}
                     ></div>
                   </div>
                 </div>

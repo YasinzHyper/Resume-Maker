@@ -11,6 +11,20 @@ export interface SigninData {
   password: string;
 }
 
+export interface TextEnhancementData {
+  text: string;
+  sectionType?: string;
+}
+
+export interface TextEnhancementResponse {
+  success: boolean;
+  originalText: string;
+  enhancedText: string;
+  sectionType?: string;
+  message?: string;
+  error?: string;
+}
+
 export interface ApiResponse {
   message: string;
   success: boolean;
@@ -46,6 +60,30 @@ class ApiService {
     }
   }
 
+  private async makeTextEnhancementRequest(endpoint: string, data: TextEnhancementData): Promise<TextEnhancementResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/text-enhancer${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Text enhancement API request failed:', error);
+      return {
+        success: false,
+        originalText: data.text,
+        enhancedText: '',
+        message: 'Network error occurred',
+        error: 'Failed to connect to server'
+      };
+    }
+  }
+
   async signup(userData: SignupData): Promise<ApiResponse> {
     return this.makeRequest('/auth/signup', {
       method: 'POST',
@@ -63,6 +101,18 @@ class ApiService {
   async healthCheck(): Promise<ApiResponse> {
     return this.makeRequest('/health');
   }
+
+  async enhanceText(text: string): Promise<TextEnhancementResponse> {
+    return this.makeTextEnhancementRequest('/enhance', { text });
+  }
+
+  async enhanceResumeSection(text: string, sectionType: string): Promise<TextEnhancementResponse> {
+    return this.makeTextEnhancementRequest('/enhance-resume-section', { text, sectionType });
+  }
 }
 
 export const apiService = new ApiService();
+
+// Export individual functions for easier imports
+export const enhanceText = (text: string) => apiService.enhanceText(text);
+export const enhanceResumeSection = (text: string, sectionType: string) => apiService.enhanceResumeSection(text, sectionType);
