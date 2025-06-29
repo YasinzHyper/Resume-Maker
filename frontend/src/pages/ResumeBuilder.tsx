@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Download, Save, Eye, ArrowLeft, Plus, Trash2, Loader, Sparkles } from 'lucide-react';
+import { Download, Save, Eye, ArrowLeft, Plus, Trash2, Loader, Sparkles, Check, X } from 'lucide-react';
 import ResumePreview from '../components/ResumePreview';
 import { generatePDF } from '../utils/pdfGenerator';
 import { enhanceText } from '../services/api';
@@ -44,6 +44,8 @@ const ResumeBuilder = () => {
   const [activeSection, setActiveSection] = useState('personal');
   const [isDownloading, setIsDownloading] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [enhancedSummary, setEnhancedSummary] = useState('');
+  const [showEnhancedPreview, setShowEnhancedPreview] = useState(false);
   const [downloadMessage, setDownloadMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
@@ -190,27 +192,47 @@ const ResumeBuilder = () => {
       setTimeout(() => setDownloadMessage(null), 3000);
       return;
     }
+
     setIsEnhancing(true);
     setDownloadMessage(null);
+    setShowEnhancedPreview(false);
+    setEnhancedSummary('');
+
     try {
       const apiResponse = await enhanceText(personalInfo.summary);
+      
       if (apiResponse.success && apiResponse.enhancedText) {
-        setPersonalInfo(prev => ({
-          ...prev,
-          summary: apiResponse.enhancedText
-        }));
-        setDownloadMessage({ type: 'success', text: 'Professional Summary enhanced successfully!' });
-        setTimeout(() => setDownloadMessage(null), 3000);
+        setEnhancedSummary(apiResponse.enhancedText);
+        setShowEnhancedPreview(true);
+        setDownloadMessage({ type: 'success', text: 'Professional Summary enhanced successfully! Review and accept the changes.' });
+        setTimeout(() => setDownloadMessage(null), 5000);
       } else {
         setDownloadMessage({ type: 'error', text: apiResponse.message || 'Enhancement failed. Please try again.' });
         setTimeout(() => setDownloadMessage(null), 3000);
       }
     } catch (error) {
+      console.error('Enhancement error:', error);
       setDownloadMessage({ type: 'error', text: 'Failed to enhance text. Please try again.' });
       setTimeout(() => setDownloadMessage(null), 3000);
     } finally {
       setIsEnhancing(false);
     }
+  };
+
+  const acceptEnhancedSummary = () => {
+    setPersonalInfo(prev => ({
+      ...prev,
+      summary: enhancedSummary
+    }));
+    setShowEnhancedPreview(false);
+    setEnhancedSummary('');
+    setDownloadMessage({ type: 'success', text: 'Enhanced summary applied successfully!' });
+    setTimeout(() => setDownloadMessage(null), 3000);
+  };
+
+  const rejectEnhancedSummary = () => {
+    setShowEnhancedPreview(false);
+    setEnhancedSummary('');
   };
 
   const renderPersonalSection = () => (
@@ -259,6 +281,7 @@ const ResumeBuilder = () => {
           />
         </div>
       </div>
+      
       <div>
         <div className="flex justify-between items-center mb-2">
           <label className="block text-sm font-medium text-gray-700">Professional Summary</label>
@@ -276,12 +299,13 @@ const ResumeBuilder = () => {
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  <span>Enhance</span>
+                  <span>Enhance with AI</span>
                 </>
               )}
             </button>
           </div>
         </div>
+        
         <textarea
           value={personalInfo.summary}
           onChange={(e) => setPersonalInfo(prev => ({...prev, summary: e.target.value}))}
@@ -289,6 +313,39 @@ const ResumeBuilder = () => {
           className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="Write a brief summary of your professional background and goals..."
         />
+
+        {/* Enhanced Summary Preview */}
+        {showEnhancedPreview && enhancedSummary && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex justify-between items-start mb-3">
+              <h4 className="text-sm font-semibold text-blue-800">✨ AI Enhanced Version</h4>
+              <div className="flex space-x-2">
+                <button
+                  onClick={acceptEnhancedSummary}
+                  className="flex items-center px-3 py-1 space-x-1 text-xs text-white bg-green-600 rounded-md transition-colors hover:bg-green-700"
+                  title="Accept enhanced version"
+                >
+                  <Check className="w-3 h-3" />
+                  <span>Accept</span>
+                </button>
+                <button
+                  onClick={rejectEnhancedSummary}
+                  className="flex items-center px-3 py-1 space-x-1 text-xs text-white bg-red-600 rounded-md transition-colors hover:bg-red-700"
+                  title="Reject enhanced version"
+                >
+                  <X className="w-3 h-3" />
+                  <span>Reject</span>
+                </button>
+              </div>
+            </div>
+            <div className="p-3 bg-white rounded border text-sm text-gray-700 leading-relaxed">
+              {enhancedSummary}
+            </div>
+            <p className="mt-2 text-xs text-blue-600">
+              Review the enhanced version above. Click "Accept" to replace your current summary or "Reject" to keep the original.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
