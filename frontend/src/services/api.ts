@@ -78,7 +78,15 @@ class ApiService {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API response error:', errorText);
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
+        
+        // Return a more user-friendly error message
+        return {
+          success: false,
+          originalText: data.text,
+          enhancedText: '',
+          message: `Server error (${response.status}). The text enhancement service is temporarily unavailable.`,
+          error: `HTTP ${response.status}`
+        };
       }
 
       const result = await response.json();
@@ -90,8 +98,8 @@ class ApiService {
         success: false,
         originalText: data.text,
         enhancedText: '',
-        message: error instanceof Error ? error.message : 'Network error occurred',
-        error: 'Failed to connect to server'
+        message: 'Unable to connect to the text enhancement service. Please check your internet connection and try again.',
+        error: error instanceof Error ? error.message : 'Network error occurred'
       };
     }
   }

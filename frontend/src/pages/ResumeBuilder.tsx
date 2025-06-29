@@ -199,7 +199,9 @@ const ResumeBuilder = () => {
     setEnhancedSummary('');
 
     try {
+      console.log('Enhancing text:', personalInfo.summary);
       const apiResponse = await enhanceText(personalInfo.summary);
+      console.log('Enhancement response:', apiResponse);
       
       if (apiResponse.success && apiResponse.enhancedText) {
         setEnhancedSummary(apiResponse.enhancedText);
@@ -212,7 +214,7 @@ const ResumeBuilder = () => {
       }
     } catch (error) {
       console.error('Enhancement error:', error);
-      setDownloadMessage({ type: 'error', text: 'Failed to enhance text. Please try again.' });
+      setDownloadMessage({ type: 'error', text: 'Failed to enhance text. Please check your connection and try again.' });
       setTimeout(() => setDownloadMessage(null), 3000);
     } finally {
       setIsEnhancing(false);
